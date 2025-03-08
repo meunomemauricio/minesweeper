@@ -7,11 +7,12 @@ from minesweeper.graphics import MinesweeperWindow
 
 
 @click.group()
-def cli():
-    """Pendulum Simulator CLI."""
+def cli() -> None:
+    """Minesweeper."""
 
 
 @cli.command()
-def hello():
-    MinesweeperWindow()
+def run() -> None:
+    """Run the Game."""
+    MinesweeperWindow()  # type: ignore[abstract]
     pyglet.app.run()

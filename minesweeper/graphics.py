@@ -1,9 +1,9 @@
-from pyglet import window
 from importlib.metadata import version
+
+from pyglet import window
 
 
 class MinesweeperWindow(window.Window):
-
     CAPTION: str = f"Minesweeper - v{version('minesweeper')}"
     WIDTH = 800
     HEIGHT = 600
@@ -14,5 +14,3 @@ class MinesweeperWindow(window.Window):
             height=self.HEIGHT,
             caption=self.CAPTION,
         )
-
-    
