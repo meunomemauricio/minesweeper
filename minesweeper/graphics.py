@@ -5,20 +5,23 @@ from pathlib import Path
 from pyglet import image, window
 from pyglet.image import AbstractImage
 
+from minesweeper.board import Board
 from minesweeper.taxonomy import Piece
 
 ASSET_DIR = Path(__name__).parent.parent / "assets"
+PIECE_WIDTH = 64
+PIECE_HEIGHT = 64
 
 
 class MinesweeperWindow(window.Window):
     CAPTION: str = f"Minesweeper - v{version('minesweeper')}"
-    WIDTH = 800
-    HEIGHT = 600
 
-    def __init__(self) -> None:
+    def __init__(self, board: Board) -> None:
+        self.board = board
+
         super().__init__(
-            width=self.WIDTH,
-            height=self.HEIGHT,
+            width=self.board.rows * PIECE_WIDTH,
+            height=self.board.cols * PIECE_HEIGHT,
             caption=self.CAPTION,
         )
 
@@ -44,9 +47,10 @@ class MinesweeperWindow(window.Window):
 
     def on_draw(self) -> None:
         if not self.pause:
-            for x in range(0, self.WIDTH - 64, 64):
-                for y in range(0, self.HEIGHT - 64, 64):
-                    piece = Piece(random.choice(range(1, 13)))
+            for r in range(0, self.board.rows):
+                for c in range(0, self.board.cols):
+                    piece = self.board[r][c]
+                    x, y = r * PIECE_WIDTH, c * PIECE_HEIGHT
                     self.images[piece].blit(x, y, 0)
 
             self.pause = True
