@@ -1,6 +1,9 @@
 """Command Line Interface."""
 
 import click
+import pyglet
+
+from minesweeper.graphics import MinesweeperWindow
 
 
 @click.group()
@@ -10,4 +13,5 @@ def cli():
 
 @cli.command()
 def hello():
-    print("Hello World!")
+    MinesweeperWindow()
+    pyglet.app.run()
