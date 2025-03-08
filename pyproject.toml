@@ -45,9 +45,7 @@ warn_unused_configs = true
 show_error_codes = true
 
 [[tool.mypy.overrides]]
-module = [
-    "pyglet.*",
-]
+module = []
 ignore_missing_imports = true
 
 [tool.isort]

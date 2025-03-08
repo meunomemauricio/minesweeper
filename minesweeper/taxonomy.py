@@ -1,7 +1,9 @@
 from enum import IntEnum
 
+
 class Piece(IntEnum):
     """Board Pieces."""
+
     ONE = 1
     TWO = 2
     THREE = 3

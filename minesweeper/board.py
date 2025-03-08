@@ -1,10 +1,10 @@
 import random
 from typing import Self
+
 from minesweeper.taxonomy import Piece
 
 
 class Board:
-
     def __init__(self, rows: int, cols: int) -> None:
         self.rows = rows
         self.cols = cols
@@ -18,7 +18,7 @@ class Board:
 
             board[r][c]
         """
-        return self._pieces[row]
+        return tuple(self._pieces[row])
 
     @classmethod
     def random(cls, rows: int, cols: int) -> Self:

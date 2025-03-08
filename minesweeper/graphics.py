@@ -1,4 +1,3 @@
-import random
 from importlib.metadata import version
 from pathlib import Path
 
@@ -54,3 +53,7 @@ class MinesweeperWindow(window.Window):
                     self.images[piece].blit(x, y, 0)
 
             self.pause = True
+
+    def on_key_release(self, symbol: int, modifiers: int) -> None:
+        if symbol == window.key.ESCAPE:
+            self.close()
