@@ -9,5 +9,5 @@ def cli():
 
 
 @cli.command()
-def hello(name: str):
+def hello():
     print("Hello World!")
