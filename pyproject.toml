@@ -1,0 +1,63 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name="minesweeper"
+version="0.1.0"
+description="Minesweeper implementation using Python."
+authors=[{name="Mauricio Freitas"}]
+urls={repo="https://github.com/meunomemauricio/minesweeper"}
+readme="README.md"
+license={text = "MIT"}
+requires-python=">=3.12"
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Games/Entertainment :: Puzzle Games",
+]
+dynamic = ["dependencies"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+
+[project.optional-dependencies]
+dev = [
+  "pre-commit",
+]
+
+[project.scripts]
+minesweeper="minesweeper.cli:cli"
+
+[tool.setuptools]
+packages=["minesweeper"]
+
+[tool.mypy]
+disallow_untyped_defs = true
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = [
+    "pyglet.*",
+]
+ignore_missing_imports = true
+
+[tool.isort]
+py_version = 312
+profile = "black"
+combine_as_imports = true
+force_grid_wrap = 0
+include_trailing_comma = true
+known_first_party = [ "minesweeper" ]
+known_third_party = [ "click", "pyglet" ]
+line_length = 79
+multi_line_output = 3
+sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
