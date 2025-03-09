@@ -5,6 +5,7 @@ from pyglet import image, window
 from pyglet.image import AbstractImage
 
 from minesweeper.board import Board
+from minesweeper.utils import CentralTextDisplay
 
 ASSET_DIR = Path(__name__).parent.parent / "assets"
 CELL_WIDTH = 64
@@ -24,6 +25,8 @@ class MinesweeperWindow(window.Window):
         )
 
         self.images = self._load_images()
+
+        self.game_over_text = CentralTextDisplay(self, "GAME OVER")
 
     def _load_images(self) -> dict[str, AbstractImage]:
         return {
@@ -56,6 +59,9 @@ class MinesweeperWindow(window.Window):
                 cell = self.board[r][c]
                 x, y = r * CELL_WIDTH, c * CELL_HEIGHT
                 self.images[repr(cell)].blit(x, y, 0)
+
+        if self.board.game_over:
+            self.game_over_text.draw()
 
     def on_mouse_release(self, x: float, y: float, button: int, modifiers: int) -> None:
         """Handle Mouse Release events."""

@@ -20,6 +20,8 @@ class Board:
 
         self._cells: list[list[Cell]] = []
 
+        self.game_over = False
+
     def __getitem__(self, row: int) -> tuple[Cell, ...]:
         """Access the rows of pieces
 
@@ -69,4 +71,8 @@ class Board:
 
     def step(self, row: int, col: int) -> None:
         """Step into one of the cells."""
-        self._cells[row][col].is_hidden = False
+        cell = self._cells[row][col]
+        cell.is_hidden = False
+
+        if cell.is_mine:
+            self.game_over = True
