@@ -66,3 +66,7 @@ class Board:
                         board._cells[r_m + i][c_m + j].count += 1
 
         return board
+
+    def step(self, row: int, col: int) -> None:
+        """Step into one of the cells."""
+        self._cells[row][col].is_hidden = False

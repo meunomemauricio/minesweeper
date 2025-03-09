@@ -23,11 +23,9 @@ class MinesweeperWindow(window.Window):
             caption=self.CAPTION,
         )
 
-        self.images = self.load_images()
+        self.images = self._load_images()
 
-        self.pause = False
-
-    def load_images(self) -> dict[str, AbstractImage]:
+    def _load_images(self) -> dict[str, AbstractImage]:
         return {
             "0": image.load(str(ASSET_DIR / "empty.png")),
             "1": image.load(str(ASSET_DIR / "one.png")),
@@ -43,16 +41,34 @@ class MinesweeperWindow(window.Window):
             "f": image.load(str(ASSET_DIR / "flag.png")),
         }
 
-    def on_draw(self) -> None:
-        if not self.pause:
-            for r in range(0, self.board.rows):
-                for c in range(0, self.board.cols):
-                    cell = self.board[r][c]
-                    x, y = r * CELL_WIDTH, c * CELL_HEIGHT
-                    self.images[repr(cell)].blit(x, y, 0)
+    def _is_out_of_bounds(self, x: float, y: float) -> bool:
+        """Check if coordinates are outside the window bounds."""
+        return (x < 0 or x >= self.width) or (y < 0 or y >= self.height)
 
-            self.pause = True
+    def _to_board_coords(self, x: float, y: float) -> tuple[int, int]:
+        """Convert the window coordinates into board coordinates."""
+        return int(x // CELL_WIDTH), int(y // CELL_HEIGHT)
+
+    def on_draw(self) -> None:
+        """Handle graphics drawing."""
+        for r in range(0, self.board.rows):
+            for c in range(0, self.board.cols):
+                cell = self.board[r][c]
+                x, y = r * CELL_WIDTH, c * CELL_HEIGHT
+                self.images[repr(cell)].blit(x, y, 0)
+
+    def on_mouse_release(self, x: float, y: float, button: int, modifiers: int) -> None:
+        """Handle Mouse Release events."""
+        if button != window.mouse.LEFT:
+            return
+
+        if self._is_out_of_bounds(x=x, y=y):
+            return
+
+        row, col = self._to_board_coords(x=x, y=y)
+        self.board.step(row=row, col=col)
 
     def on_key_release(self, symbol: int, modifiers: int) -> None:
+        """Handle Keyboard Release events."""
         if symbol in [window.key.ESCAPE, window.key.Q]:
             self.close()
