@@ -30,8 +30,6 @@ class MinesweeperWindow(window.Window):
 
     def load_images(self) -> dict[Piece, AbstractImage]:
         return {
-            Piece.BASE: image.load(str(ASSET_DIR / "base.png")),
-            Piece.BOMB: image.load(str(ASSET_DIR / "bomb.png")),
             Piece.ONE: image.load(str(ASSET_DIR / "one.png")),
             Piece.TWO: image.load(str(ASSET_DIR / "two.png")),
             Piece.THREE: image.load(str(ASSET_DIR / "three.png")),
@@ -40,8 +38,10 @@ class MinesweeperWindow(window.Window):
             Piece.SIX: image.load(str(ASSET_DIR / "six.png")),
             Piece.SEVEN: image.load(str(ASSET_DIR / "seven.png")),
             Piece.EIGHT: image.load(str(ASSET_DIR / "eight.png")),
-            Piece.EMPTY: image.load(str(ASSET_DIR / "empty.png")),
+            Piece.BASE: image.load(str(ASSET_DIR / "base.png")),
+            Piece.MINE: image.load(str(ASSET_DIR / "mine.png")),
             Piece.FLAG: image.load(str(ASSET_DIR / "flag.png")),
+            Piece.EMPTY: image.load(str(ASSET_DIR / "empty.png")),
         }
 
     def on_draw(self) -> None:
@@ -55,5 +55,5 @@ class MinesweeperWindow(window.Window):
             self.pause = True
 
     def on_key_release(self, symbol: int, modifiers: int) -> None:
-        if symbol == window.key.ESCAPE:
+        if symbol in [window.key.ESCAPE, window.key.Q]:
             self.close()

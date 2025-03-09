@@ -4,6 +4,8 @@ from enum import IntEnum
 class Piece(IntEnum):
     """Board Pieces."""
 
+    EMPTY = 0
+
     ONE = 1
     TWO = 2
     THREE = 3
@@ -14,6 +16,5 @@ class Piece(IntEnum):
     EIGHT = 8
 
     BASE = 9
-    BOMB = 10
+    MINE = 10
     FLAG = 11
-    EMPTY = 12
