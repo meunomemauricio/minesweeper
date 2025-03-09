@@ -51,10 +51,20 @@ class Board:
         board = cls(rows=rows, cols=cols, mines=mines)
         board._pieces = [(cols * [Piece(0)]) for _ in range(rows)]
 
-        # Randomly distribute the mines
+        # Randomly assign mines
         population = list(itertools.product(range(rows), range(cols)))
         mine_coords = random.sample(population=population, k=mines)
-        for r, c in mine_coords:
-            board._pieces[r][c] = Piece.MINE
+        for r_m, c_m in mine_coords:
+            board._pieces[r_m][c_m] = Piece.MINE
+
+            # Increment adjacent regular cells
+            for i, j in itertools.product(range(-1, 2), range(-1, 2)):
+                try:
+                    value = board._pieces[r_m + i][c_m + j]
+                except IndexError:
+                    pass
+                else:
+                    if value < Piece.EIGHT:
+                        board._pieces[r_m + i][c_m + j] = Piece(value + 1)
 
         return board
