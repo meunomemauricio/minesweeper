@@ -4,7 +4,7 @@ from pathlib import Path
 from pyglet import image, window
 from pyglet.image import AbstractImage
 
-from minesweeper.board import Board
+from minesweeper.board import Board, StrCell
 from minesweeper.utils import CentralTextDisplay, FPSDisplay
 
 ASSET_DIR = Path(__name__).parent.parent / "assets"
@@ -29,7 +29,7 @@ class MinesweeperWindow(window.Window):
         self.game_over_text = CentralTextDisplay(self, text="GAME OVER")
         self.fps_display = FPSDisplay(self, is_active=show_fps)
 
-    def _load_images(self) -> dict[str, AbstractImage]:
+    def _load_images(self) -> dict[StrCell, AbstractImage]:
         return {
             "0": image.load(str(ASSET_DIR / "empty.png")),
             "1": image.load(str(ASSET_DIR / "one.png")),
@@ -59,7 +59,7 @@ class MinesweeperWindow(window.Window):
             for c in range(0, self.board.cols):
                 cell = self.board[r][c]
                 x, y = r * CELL_WIDTH, c * CELL_HEIGHT
-                self.images[repr(cell)].blit(x, y, 0)
+                self.images[cell.repr()].blit(x, y, 0)
 
         if self.board.game_over:
             self.game_over_text.draw()

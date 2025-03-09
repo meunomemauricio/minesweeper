@@ -29,6 +29,7 @@ dependencies = {file = ["requirements.txt"]}
 [project.optional-dependencies]
 dev = [
   "pre-commit",
+  "typing_extensions",
 ]
 
 [project.scripts]

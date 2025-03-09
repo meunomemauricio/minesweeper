@@ -1,6 +1,12 @@
 import itertools
 import random
 from dataclasses import dataclass
+from typing import Literal, get_args
+
+from typing_extensions import TypeIs
+
+StrCell = Literal["0", "1", "2", "3", "4", "5", "6", "7", "8", "f", "h", "m"]
+VALID_COUNT: frozenset[StrCell] = frozenset(get_args(StrCell))
 
 
 class GameOverError(Exception):
@@ -16,18 +22,25 @@ class Cell:
     is_mine: bool = False
     count: int = 0  # Adjacent Mines
 
-    def __repr__(self) -> str:
+    def _is_str_cell(self, val: str) -> TypeIs[StrCell]:
+        """Type Narrowing Check."""
+        return val in VALID_COUNT
+
+    def repr(self) -> StrCell:
         """String representation of the cell."""
-        if self.is_flag:
-            return "f"
+        value = ""
+        match (self.is_flag, self.is_hidden, self.is_mine):
+            case (True, _, _):
+                value = "f"
+            case (False, True, _):
+                value = "h"
+            case (False, False, True):
+                value = "m"
+            case (False, False, False):
+                value = str(self.count)
 
-        if self.is_hidden:
-            return "h"
-
-        if self.is_mine:
-            return "m"
-
-        return str(self.count)
+        assert self._is_str_cell(val=value), f"Unexpected value: {value}"
+        return value
 
 
 class Board:
