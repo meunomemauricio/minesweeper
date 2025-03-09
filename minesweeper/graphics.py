@@ -5,7 +5,7 @@ from pyglet import image, window
 from pyglet.image import AbstractImage
 
 from minesweeper.board import Board
-from minesweeper.utils import CentralTextDisplay
+from minesweeper.utils import CentralTextDisplay, FPSDisplay
 
 ASSET_DIR = Path(__name__).parent.parent / "assets"
 CELL_WIDTH = 64
@@ -15,7 +15,7 @@ CELL_HEIGHT = 64
 class MinesweeperWindow(window.Window):
     CAPTION: str = f"Minesweeper - v{version('minesweeper')}"
 
-    def __init__(self, board: Board) -> None:
+    def __init__(self, board: Board, show_fps: bool) -> None:
         self.board = board
 
         super().__init__(
@@ -26,7 +26,8 @@ class MinesweeperWindow(window.Window):
 
         self.images = self._load_images()
 
-        self.game_over_text = CentralTextDisplay(self, "GAME OVER")
+        self.game_over_text = CentralTextDisplay(self, text="GAME OVER")
+        self.fps_display = FPSDisplay(self, is_active=show_fps)
 
     def _load_images(self) -> dict[str, AbstractImage]:
         return {
@@ -63,6 +64,8 @@ class MinesweeperWindow(window.Window):
         if self.board.game_over:
             self.game_over_text.draw()
 
+        self.fps_display.draw()
+
     def on_mouse_release(self, x: float, y: float, button: int, modifiers: int) -> None:
         """Handle Mouse Release events."""
         if button != window.mouse.LEFT:
@@ -71,8 +74,9 @@ class MinesweeperWindow(window.Window):
         if self._is_out_of_bounds(x=x, y=y):
             return
 
-        row, col = self._to_board_coords(x=x, y=y)
-        self.board.step(row=row, col=col)
+        if not self.board.game_over:
+            row, col = self._to_board_coords(x=x, y=y)
+            self.board.step(row=row, col=col)
 
     def on_key_release(self, symbol: int, modifiers: int) -> None:
         """Handle Keyboard Release events."""

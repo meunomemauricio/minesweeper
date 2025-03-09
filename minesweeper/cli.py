@@ -16,8 +16,9 @@ def cli() -> None:
 @click.option("-r", "--rows", type=int, default=10)
 @click.option("-c", "--cols", type=int, default=10)
 @click.option("-m", "--mines", type=int, default=10)
-def run(rows: int, cols: int, mines: int) -> None:
+@click.option("-F", "--fps/--no-fps", type=bool, default=False)
+def run(rows: int, cols: int, mines: int, fps: bool) -> None:
     """Run the Game."""
     board = Board.new(rows=rows, cols=cols, mines=mines)
-    MinesweeperWindow(board=board)  # type: ignore[abstract]
+    MinesweeperWindow(board=board, show_fps=fps)  # type: ignore[abstract]
     pyglet.app.run()

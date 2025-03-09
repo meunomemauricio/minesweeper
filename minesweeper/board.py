@@ -5,6 +5,10 @@ from typing import Self
 from minesweeper.cells import CELL_POPULATION, Cell
 
 
+class GameOverError(Exception):
+    """Tried to execute an action after the game is over."""
+
+
 class Board:
     # Maximum allowed mines as a fraction of the total # of cells
     MAX_MINES = 0.5
@@ -71,6 +75,9 @@ class Board:
 
     def step(self, row: int, col: int) -> None:
         """Step into one of the cells."""
+        if self.game_over:
+            raise GameOverError("Can't step after game over.")
+
         cell = self._cells[row][col]
         cell.is_hidden = False
 
