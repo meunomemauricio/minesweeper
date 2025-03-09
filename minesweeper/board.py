@@ -2,7 +2,7 @@ import itertools
 import random
 from typing import Self
 
-from minesweeper.taxonomy import Piece
+from minesweeper.cells import CELL_POPULATION, Cell
 
 
 class Board:
@@ -18,16 +18,16 @@ class Board:
         self.cols = cols
         self.mines = mines
 
-        self._pieces: list[list[Piece]] = []
+        self._cells: list[list[Cell]] = []
 
-    def __getitem__(self, row: int) -> tuple[Piece, ...]:
+    def __getitem__(self, row: int) -> tuple[Cell, ...]:
         """Access the rows of pieces
 
-        This allows for readonly access to the pieces using the format
+        This allows for readonly access to the cells using the format
 
             board[r][c]
         """
-        return tuple(self._pieces[row])
+        return tuple(self._cells[row])
 
     @classmethod
     def random(cls, rows: int, cols: int) -> Self:
@@ -35,13 +35,11 @@ class Board:
 
         Not a valid game, but helps debug the graphics.
         """
-        population = [Piece(i) for i in range(0, 12)]
-
         board = cls(rows=rows, cols=cols, mines=0)
         for _ in range(rows):
-            col = random.choices(population=population, k=cols)
-            board._pieces.append(col)
-            board.mines += len([p for p in col if p == Piece.MINE])
+            col = random.choices(population=CELL_POPULATION, k=cols)
+            board._cells.append(col)
+            board.mines += len([p for p in col if p == p.is_mine])
 
         return board
 
@@ -49,22 +47,22 @@ class Board:
     def new(cls, rows: int, cols: int, mines: int) -> Self:
         """Generate a new valid game board."""
         board = cls(rows=rows, cols=cols, mines=mines)
-        board._pieces = [(cols * [Piece(0)]) for _ in range(rows)]
+        board._cells = [[Cell() for _ in range(cols)] for _ in range(rows)]
 
         # Randomly assign mines
         population = list(itertools.product(range(rows), range(cols)))
         mine_coords = random.sample(population=population, k=mines)
         for r_m, c_m in mine_coords:
-            board._pieces[r_m][c_m] = Piece.MINE
+            board._cells[r_m][c_m].is_mine = True
 
             # Increment adjacent regular cells
             for i, j in itertools.product(range(-1, 2), range(-1, 2)):
                 try:
-                    value = board._pieces[r_m + i][c_m + j]
+                    cell = board._cells[r_m + i][c_m + j]
                 except IndexError:
                     pass
                 else:
-                    if value < Piece.EIGHT:
-                        board._pieces[r_m + i][c_m + j] = Piece(value + 1)
+                    if cell.count < Cell.MAX_COUNT:
+                        board._cells[r_m + i][c_m + j].count += 1
 
         return board
