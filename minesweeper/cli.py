@@ -3,6 +3,7 @@
 import click
 import pyglet
 
+from minesweeper.board import Board
 from minesweeper.graphics import MinesweeperWindow
 
 
@@ -12,7 +13,11 @@ def cli() -> None:
 
 
 @cli.command()
-def run() -> None:
+@click.option("-r", "--rows", type=int, default=10)
+@click.option("-c", "--cols", type=int, default=10)
+@click.option("-m", "--mines", type=int, default=10)
+def run(rows: int, cols: int, mines: int) -> None:
     """Run the Game."""
-    MinesweeperWindow()  # type: ignore[abstract]
+    board = Board.new(rows=rows, cols=cols, mines=mines)
+    MinesweeperWindow(board=board)  # type: ignore[abstract]
     pyglet.app.run()
