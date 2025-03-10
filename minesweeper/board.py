@@ -1,46 +1,11 @@
 import itertools
 import random
-from dataclasses import dataclass
-from typing import Literal, get_args
 
-from typing_extensions import TypeIs
-
-StrCell = Literal["0", "1", "2", "3", "4", "5", "6", "7", "8", "f", "h", "m"]
-VALID_COUNT: frozenset[StrCell] = frozenset(get_args(StrCell))
+from minesweeper.cells import Cell, CellMatrix
 
 
 class GameOverError(Exception):
     """Tried to execute an action after the game is over."""
-
-
-@dataclass
-class Cell:
-    MAX_COUNT = 8
-
-    is_hidden: bool = True
-    is_flag: bool = False
-    is_mine: bool = False
-    count: int = 0  # Adjacent Mines
-
-    def _is_str_cell(self, val: str) -> TypeIs[StrCell]:
-        """Type Narrowing Check."""
-        return val in VALID_COUNT
-
-    def repr(self) -> StrCell:
-        """String representation of the cell."""
-        value = ""
-        match (self.is_flag, self.is_hidden, self.is_mine):
-            case (True, _, _):
-                value = "f"
-            case (False, True, _):
-                value = "h"
-            case (False, False, True):
-                value = "m"
-            case (False, False, False):
-                value = str(self.count)
-
-        assert self._is_str_cell(val=value), f"Unexpected value: {value}"
-        return value
 
 
 class Board:
@@ -56,19 +21,19 @@ class Board:
         self.cols = cols
         self.mines = mines
 
-        self._cells = [[Cell() for _ in range(self.cols)] for _ in range(self.rows)]
+        self._cells = CellMatrix(rows=rows, cols=cols)
 
         self.initialized = False
         self.game_over = False
 
-    def __getitem__(self, row: int) -> tuple[Cell, ...]:
+    def __getitem__(self, coords: tuple[int, int]) -> Cell:
         """Access the rows of pieces
 
         This allows for readonly access to the cells using the format
 
             board[r][c]
         """
-        return tuple(self._cells[row])
+        return self._cells[*coords]
 
     def _initialize(self, row: int, col: int) -> None:
         """Generate a new valid game board.
@@ -83,19 +48,44 @@ class Board:
         # Assign mines at random
         mine_coords = random.sample(population=population, k=self.mines)
         for r_m, c_m in mine_coords:
-            self._cells[r_m][c_m].is_mine = True
+            self._cells[r_m, c_m].is_mine = True
 
             # Increment adjacent regular cells
             for i, j in itertools.product(range(-1, 2), range(-1, 2)):
                 try:
-                    cell = self._cells[r_m + i][c_m + j]
+                    cell = self._cells[r_m + i, c_m + j]
                 except IndexError:
                     pass
                 else:
                     if cell.count < Cell.MAX_COUNT:
-                        self._cells[r_m + i][c_m + j].count += 1
+                        self._cells[r_m + i, c_m + j].count += 1
 
         self.initialized = True
+
+    def _reveal_adjacent(self, cell: Cell) -> None:
+        """Recursively reveal adjacent empty cells."""
+        stack: list[Cell] = [cell]
+        revealed: set[Cell] = set()
+
+        while stack:
+            cell = stack.pop()
+            if cell in revealed:
+                continue
+
+            cell.is_hidden = False
+            revealed.add(cell)
+
+            if not cell.is_empty:
+                continue
+
+            for i, j in itertools.product(range(-1, 2), range(-1, 2)):
+                r_adj, c_adj = cell.row + i, cell.col + j
+                try:
+                    adj = self._cells[r_adj, c_adj]
+                except IndexError:
+                    continue
+                else:
+                    stack.append(adj)
 
     def step(self, row: int, col: int) -> None:
         """Step into one of the cells.
@@ -109,8 +99,11 @@ class Board:
         if self.game_over:
             raise GameOverError("Can't step after game over.")
 
-        cell = self._cells[row][col]
+        cell = self._cells[row, col]
         cell.is_hidden = False
+
+        if cell.is_empty:
+            self._reveal_adjacent(cell=cell)
 
         if cell.is_mine:
             self.game_over = True

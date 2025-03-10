@@ -4,7 +4,8 @@ from pathlib import Path
 from pyglet import image, window
 from pyglet.image import AbstractImage
 
-from minesweeper.board import Board, StrCell
+from minesweeper.board import Board
+from minesweeper.cells import StrCell
 from minesweeper.utils import CentralTextDisplay, FPSDisplay
 
 ASSET_DIR = Path(__name__).parent.parent / "assets"
@@ -57,7 +58,7 @@ class MinesweeperWindow(window.Window):
         """Handle graphics drawing."""
         for r in range(0, self.board.rows):
             for c in range(0, self.board.cols):
-                cell = self.board[r][c]
+                cell = self.board[r, c]
                 x, y = r * CELL_WIDTH, c * CELL_HEIGHT
                 self.images[cell.repr()].blit(x, y, 0)
 
@@ -82,3 +83,5 @@ class MinesweeperWindow(window.Window):
         """Handle Keyboard Release events."""
         if symbol in [window.key.ESCAPE, window.key.Q]:
             self.close()
+
+        # TODO: Restart
