@@ -106,6 +106,9 @@ class Board:
             raise GameOverError("Can't step after game over.")
 
         cell = self._cells[row, col]
+        if cell.is_flag:
+            return
+
         cell.is_hidden = False
 
         if cell.is_empty:
@@ -113,3 +116,14 @@ class Board:
 
         if cell.is_mine:
             self.game_over = True
+
+    def flag(self, row: int, col: int) -> None:
+        """Mark a cell as a flag or undo it."""
+        if not (self.initialized):
+            self._initialize(row=row, col=col)
+
+        if self.game_over:
+            raise GameOverError("Can't toggle flags after game over.")
+
+        cell = self._cells[row, col]
+        cell.is_flag = not cell.is_flag

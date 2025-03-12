@@ -69,15 +69,15 @@ class MinesweeperWindow(window.Window):
 
     def on_mouse_release(self, x: float, y: float, button: int, modifiers: int) -> None:
         """Handle Mouse Release events."""
-        if button != window.mouse.LEFT:
+        if self._is_out_of_bounds(x=x, y=y) or self.board.game_over:
             return
 
-        if self._is_out_of_bounds(x=x, y=y):
-            return
-
-        if not self.board.game_over:
-            row, col = self._to_board_coords(x=x, y=y)
-            self.board.step(row=row, col=col)
+        row, col = self._to_board_coords(x=x, y=y)
+        match button:
+            case window.mouse.LEFT:
+                self.board.step(row=row, col=col)
+            case window.mouse.RIGHT:
+                self.board.flag(row=row, col=col)
 
     def on_key_release(self, symbol: int, modifiers: int) -> None:
         """Handle Keyboard Release events."""
