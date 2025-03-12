@@ -81,7 +81,8 @@ class MinesweeperWindow(window.Window):
 
     def on_key_release(self, symbol: int, modifiers: int) -> None:
         """Handle Keyboard Release events."""
-        if symbol in [window.key.ESCAPE, window.key.Q]:
-            self.close()
-
-        # TODO: Restart
+        match symbol:
+            case window.key.ESCAPE | window.key.Q:
+                self.close()
+            case window.key.R:
+                self.board.reset()

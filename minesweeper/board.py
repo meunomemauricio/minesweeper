@@ -87,6 +87,12 @@ class Board:
                 else:
                     stack.append(adj)
 
+    def reset(self) -> None:
+        """Reset the Board."""
+        self.initialized = False
+        self.game_over = False
+        self._cells = CellMatrix(rows=self.rows, cols=self.cols)
+
     def step(self, row: int, col: int) -> None:
         """Step into one of the cells.
 
