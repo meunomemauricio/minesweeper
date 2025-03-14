@@ -1,6 +1,6 @@
-from pathlib import Path
+from importlib import resources
 
-from pyglet import image
+from pyglet import resource
 from pyglet.graphics import Batch
 from pyglet.image import AbstractImage
 from pyglet.shapes import BorderedRectangle
@@ -10,7 +10,10 @@ from pyglet.window import FPSDisplay as PygletFPSDisplay, Window
 from minesweeper.board import Board
 from minesweeper.cells import StrCell
 
-ASSET_DIR = Path(__name__).parent.parent / "assets"
+assets_dir = resources.files("minesweeper").joinpath("assets")
+with resources.as_file(assets_dir) as assets_path:
+    resource.path = [str(assets_path)]
+    resource.reindex()
 
 
 class BoardDisplay:
@@ -24,18 +27,18 @@ class BoardDisplay:
 
     def _load_images(self) -> dict[StrCell, AbstractImage]:
         return {
-            "0": image.load(str(ASSET_DIR / "empty.png")),
-            "1": image.load(str(ASSET_DIR / "one.png")),
-            "2": image.load(str(ASSET_DIR / "two.png")),
-            "3": image.load(str(ASSET_DIR / "three.png")),
-            "4": image.load(str(ASSET_DIR / "four.png")),
-            "5": image.load(str(ASSET_DIR / "five.png")),
-            "6": image.load(str(ASSET_DIR / "six.png")),
-            "7": image.load(str(ASSET_DIR / "seven.png")),
-            "8": image.load(str(ASSET_DIR / "eight.png")),
-            "h": image.load(str(ASSET_DIR / "hidden.png")),
-            "m": image.load(str(ASSET_DIR / "mine.png")),
-            "f": image.load(str(ASSET_DIR / "flag.png")),
+            "0": resource.image("empty.png"),
+            "1": resource.image("one.png"),
+            "2": resource.image("two.png"),
+            "3": resource.image("three.png"),
+            "4": resource.image("four.png"),
+            "5": resource.image("five.png"),
+            "6": resource.image("six.png"),
+            "7": resource.image("seven.png"),
+            "8": resource.image("eight.png"),
+            "h": resource.image("hidden.png"),
+            "m": resource.image("mine.png"),
+            "f": resource.image("flag.png"),
         }
 
     def update(self) -> None:
