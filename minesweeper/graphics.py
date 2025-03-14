@@ -28,6 +28,7 @@ class MinesweeperWindow(window.Window):
         self.images = self._load_images()
 
         self.game_over_text = CentralTextDisplay(self, text="GAME OVER")
+        self.win_text = CentralTextDisplay(self, text="GG!")
         self.fps_display = FPSDisplay(self, is_active=show_fps)
 
     def _load_images(self) -> dict[StrCell, AbstractImage]:
@@ -60,7 +61,10 @@ class MinesweeperWindow(window.Window):
             for c in range(0, self.board.cols):
                 cell = self.board[r, c]
                 x, y = r * CELL_WIDTH, c * CELL_HEIGHT
-                self.images[cell.repr()].blit(x, y, 0)
+                self.images[cell.repr].blit(x, y, 0)
+
+        if self.board.has_won:
+            self.win_text.draw()
 
         if self.board.game_over:
             self.game_over_text.draw()

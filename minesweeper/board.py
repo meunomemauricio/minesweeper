@@ -35,6 +35,11 @@ class Board:
         """
         return self._cells[*coords]
 
+    @property
+    def has_won(self) -> bool:
+        """Whether the board reached a winning state."""
+        return self._cells.correct_count == self.mines
+
     def _initialize(self, row: int, col: int) -> None:
         """Generate a new valid game board.
 
@@ -127,3 +132,4 @@ class Board:
 
         cell = self._cells[row, col]
         cell.is_flag = not cell.is_flag
+        cell.is_hidden = not cell.is_hidden

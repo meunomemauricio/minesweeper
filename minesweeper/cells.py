@@ -21,10 +21,15 @@ class Cell:
     is_mine: bool = False
     count: int = 0  # Adjacent Mines
 
+    def __hash__(self) -> int:
+        """Allows for storing Cells in a Set."""
+        return hash((self.row, self.col))
+
     def _is_str_cell(self, val: str) -> "TypeIs[StrCell]":
         """Type Narrowing Check."""
         return val in VALID_COUNT
 
+    @property
     def repr(self) -> StrCell:
         """String representation of the cell."""
         value = ""
@@ -49,9 +54,13 @@ class Cell:
 
         return self.count == 0
 
-    def __hash__(self) -> int:
-        """Allows for storing Cells in a Set."""
-        return hash((self.row, self.col))
+    @property
+    def is_correct(self) -> bool:
+        """If the cell is a correctly flagged mine.
+
+        This state is kept secret from the player.
+        """
+        return self.is_flag and self.is_mine
 
 
 class CellMatrix:
@@ -70,3 +79,11 @@ class CellMatrix:
             raise IndexError("Negative index access is not allowed")
 
         return self._matrix[coord[0]][coord[1]]
+
+    @property
+    def hidden_count(self) -> int:
+        return sum(sum(1 for cell in row if cell.is_hidden) for row in self._matrix)
+
+    @property
+    def correct_count(self) -> int:
+        return sum(sum(1 for cell in row if cell.is_correct) for row in self._matrix)
