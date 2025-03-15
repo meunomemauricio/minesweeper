@@ -1,9 +1,11 @@
+from functools import cached_property
 from importlib import resources
 
 from pyglet import resource
 from pyglet.graphics import Batch
 from pyglet.image import AbstractImage
 from pyglet.shapes import BorderedRectangle
+from pyglet.sprite import Sprite
 from pyglet.text import Label
 from pyglet.window import FPSDisplay as PygletFPSDisplay, Window
 
@@ -23,9 +25,10 @@ class BoardDisplay:
 
         self._batch = Batch()
 
-        self._images = self._load_images()
+        self._sprites: list[list[Sprite]] = self._create_sprites()
 
-    def _load_images(self) -> dict[StrCell, AbstractImage]:
+    @cached_property
+    def _images(self) -> dict[StrCell, AbstractImage]:
         return {
             "0": resource.image("empty.png"),
             "1": resource.image("one.png"),
@@ -41,16 +44,28 @@ class BoardDisplay:
             "f": resource.image("flag.png"),
         }
 
-    def update(self) -> None:
-        """"""
+    def _create_sprites(self) -> list[list[Sprite]]:
+        rows = []
+        for r in range(0, self._board.rows):
+            cols = []
+            for c in range(0, self._board.cols):
+                x, y = r * self._cell_len, c * self._cell_len
+                image = self._images[self._board[r, c].repr]
+                cols.append(Sprite(img=image, x=x, y=y, batch=self._batch))
 
-    def draw(self) -> None:
-        """"""
+            rows.append(cols)
+
+        return rows
+
+    def update(self) -> None:
+        """Update sprite image to reflect board state"""
         for r in range(0, self._board.rows):
             for c in range(0, self._board.cols):
                 cell = self._board[r, c]
-                x, y = r * self._cell_len, c * self._cell_len
-                self._images[cell.repr].blit(x, y, 0)
+                self._sprites[r][c].image = self._images[cell.repr]
+
+    def draw(self) -> None:
+        self._batch.draw()
 
 
 class FPSDisplay(PygletFPSDisplay):
