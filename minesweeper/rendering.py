@@ -2,15 +2,14 @@ from functools import cached_property
 from importlib import resources
 
 from pyglet import resource
-from pyglet.graphics import Batch
 from pyglet.image import AbstractImage
 from pyglet.shapes import BorderedRectangle
 from pyglet.sprite import Sprite
 from pyglet.text import Label
-from pyglet.window import FPSDisplay as PygletFPSDisplay, Window
 
 from minesweeper.board import Board
 from minesweeper.cells import StrCell
+from minesweeper.graphics import Canvas
 
 assets_dir = resources.files("minesweeper").joinpath("assets")
 with resources.as_file(assets_dir) as assets_path:
@@ -19,11 +18,10 @@ with resources.as_file(assets_dir) as assets_path:
 
 
 class BoardDisplay:
-    def __init__(self, board: Board, cell_len: int):
+    def __init__(self, board: Board, cell_len: int, canvas: Canvas):
         self._board = board
         self._cell_len = cell_len
-
-        self._batch = Batch()
+        self._canvas = canvas
 
         self._sprites: list[list[Sprite]] = self._create_sprites()
 
@@ -51,7 +49,15 @@ class BoardDisplay:
             for c in range(0, self._board.cols):
                 x, y = r * self._cell_len, c * self._cell_len
                 image = self._images[self._board[r, c].repr]
-                cols.append(Sprite(img=image, x=x, y=y, batch=self._batch))
+                cols.append(
+                    Sprite(
+                        img=image,
+                        x=x,
+                        y=y,
+                        batch=self._canvas.batch,
+                        group=self._canvas["main"],
+                    )
+                )
 
             rows.append(cols)
 
@@ -64,44 +70,14 @@ class BoardDisplay:
                 cell = self._board[r, c]
                 self._sprites[r][c].image = self._images[cell.repr]
 
-    def draw(self) -> None:
-        self._batch.draw()
 
-
-class FPSDisplay(PygletFPSDisplay):
-    """Custom FPS Display."""
-
-    FONT_SIZE = 16
-    FONT_COLOR = 255, 0, 0, 200
-
-    def __init__(self, window: Window, is_active: bool = True):
-        super().__init__(window=window)
-        self._is_active = is_active
-
-        self.label = Label(
-            font_size=self.FONT_SIZE,
-            x=window.width - self.FONT_SIZE * 4,
-            y=window.height - self.FONT_SIZE - 1,
-            color=self.FONT_COLOR,
-            weight="bold",
-        )
-
-    def update(self) -> None:
-        if self._is_active:
-            super().update()
-
-    def draw(self) -> None:
-        if self._is_active:
-            super().draw()
-
-
-class CentralTextDisplay:
+class AlertDisplay:
     FONT_SIZE = 24
     HEIGHT = 50
     WIDTH = 200
 
-    def __init__(self, width: int, height: int, text: str):
-        self._batch = Batch()
+    def __init__(self, width: int, height: int, text: str, canvas: Canvas):
+        self._canvas = canvas
 
         self.rect = BorderedRectangle(
             x=(width // 2) - (self.WIDTH // 2),
@@ -110,7 +86,8 @@ class CentralTextDisplay:
             height=self.HEIGHT,
             color=(0, 0, 0, 255),
             border_color=(255, 0, 0, 255),
-            batch=self._batch,
+            batch=self._canvas.batch,
+            group=self._canvas["alert"],
         )
 
         self.label = Label(
@@ -122,8 +99,14 @@ class CentralTextDisplay:
             anchor_y="center",
             color=(255, 0, 0, 255),
             weight="bold",
-            batch=self._batch,
+            batch=self._canvas.batch,
+            group=self._canvas["alert"],
         )
 
-    def draw(self) -> None:
-        self._batch.draw()
+    @property
+    def text(self) -> str:
+        return self.label.text
+
+    @text.setter
+    def text(self, value: str) -> None:
+        self.label.text = value

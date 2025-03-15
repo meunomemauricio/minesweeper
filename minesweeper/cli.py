@@ -4,7 +4,7 @@ import click
 import pyglet
 
 from minesweeper.board import Board
-from minesweeper.graphics import MinesweeperWindow
+from minesweeper.window import MinesweeperWindow
 
 
 @click.group()
