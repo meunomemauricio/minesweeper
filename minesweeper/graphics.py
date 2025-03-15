@@ -1,16 +1,11 @@
 from importlib.metadata import version
-from pathlib import Path
 
-from pyglet import image, window
-from pyglet.image import AbstractImage
+from pyglet import window
 
 from minesweeper.board import Board
-from minesweeper.cells import StrCell
-from minesweeper.utils import CentralTextDisplay, FPSDisplay
+from minesweeper.rendering import BoardDisplay, CentralTextDisplay, FPSDisplay
 
-ASSET_DIR = Path(__name__).parent.parent / "assets"
-CELL_WIDTH = 64
-CELL_HEIGHT = 64
+CELL_LENGTH = 64  # Assume cells are square
 
 
 class MinesweeperWindow(window.Window):
@@ -20,32 +15,23 @@ class MinesweeperWindow(window.Window):
         self.board = board
 
         super().__init__(
-            width=self.board.rows * CELL_WIDTH,
-            height=self.board.cols * CELL_HEIGHT,
+            width=self.board.rows * CELL_LENGTH,
+            height=self.board.cols * CELL_LENGTH,
             caption=self.CAPTION,
         )
 
-        self.images = self._load_images()
-
-        self.game_over_text = CentralTextDisplay(self, text="GAME OVER")
-        self.win_text = CentralTextDisplay(self, text="GG!")
-        self.fps_display = FPSDisplay(self, is_active=show_fps)
-
-    def _load_images(self) -> dict[StrCell, AbstractImage]:
-        return {
-            "0": image.load(str(ASSET_DIR / "empty.png")),
-            "1": image.load(str(ASSET_DIR / "one.png")),
-            "2": image.load(str(ASSET_DIR / "two.png")),
-            "3": image.load(str(ASSET_DIR / "three.png")),
-            "4": image.load(str(ASSET_DIR / "four.png")),
-            "5": image.load(str(ASSET_DIR / "five.png")),
-            "6": image.load(str(ASSET_DIR / "six.png")),
-            "7": image.load(str(ASSET_DIR / "seven.png")),
-            "8": image.load(str(ASSET_DIR / "eight.png")),
-            "h": image.load(str(ASSET_DIR / "hidden.png")),
-            "m": image.load(str(ASSET_DIR / "mine.png")),
-            "f": image.load(str(ASSET_DIR / "flag.png")),
-        }
+        self.board_display = BoardDisplay(board=board, cell_len=CELL_LENGTH)
+        self.game_over_text = CentralTextDisplay(
+            width=self.width,
+            height=self.height,
+            text="GAME OVER",
+        )
+        self.win_text = CentralTextDisplay(
+            width=self.width,
+            height=self.height,
+            text="GG!",
+        )
+        self.fps_display = FPSDisplay(window=self, is_active=show_fps)
 
     def _is_out_of_bounds(self, x: float, y: float) -> bool:
         """Check if coordinates are outside the window bounds."""
@@ -53,15 +39,11 @@ class MinesweeperWindow(window.Window):
 
     def _to_board_coords(self, x: float, y: float) -> tuple[int, int]:
         """Convert the window coordinates into board coordinates."""
-        return int(x // CELL_WIDTH), int(y // CELL_HEIGHT)
+        return int(x // CELL_LENGTH), int(y // CELL_LENGTH)
 
     def on_draw(self) -> None:
         """Handle graphics drawing."""
-        for r in range(0, self.board.rows):
-            for c in range(0, self.board.cols):
-                cell = self.board[r, c]
-                x, y = r * CELL_WIDTH, c * CELL_HEIGHT
-                self.images[cell.repr].blit(x, y, 0)
+        self.board_display.draw()
 
         if self.board.has_won:
             self.win_text.draw()
@@ -83,6 +65,8 @@ class MinesweeperWindow(window.Window):
             case window.mouse.RIGHT:
                 self.board.flag(row=row, col=col)
 
+        self.board_display.update()
+
     def on_key_release(self, symbol: int, modifiers: int) -> None:
         """Handle Keyboard Release events."""
         match symbol:
@@ -90,3 +74,5 @@ class MinesweeperWindow(window.Window):
                 self.close()
             case window.key.R:
                 self.board.reset()
+
+        self.board_display.update()
