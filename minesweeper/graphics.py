@@ -24,7 +24,7 @@ class ToggleGroup(Group):
         self.visible = True
 
 
-class Canvas:
+class LayerMap:
     """Combines groups into a single batch for layered rending."""
 
     def __init__(self) -> None:

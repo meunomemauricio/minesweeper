@@ -9,7 +9,7 @@ from pyglet.text import Label
 
 from minesweeper.board import Board
 from minesweeper.cells import StrCell
-from minesweeper.graphics import Canvas
+from minesweeper.graphics import LayerMap
 
 assets_dir = resources.files("minesweeper").joinpath("assets")
 with resources.as_file(assets_dir) as assets_path:
@@ -17,11 +17,72 @@ with resources.as_file(assets_dir) as assets_path:
     resource.reindex()
 
 
+class OutOfBounds(Exception):
+    """Received event coordinates outside of the board area."""
+
+
+class Composition:
+    CELL_LENGTH = 64  # Assume cells are square
+
+    _alert: "AlertBox"
+    _board_display: "BoardDisplay"
+
+    def __init__(self, board: Board, layers: LayerMap) -> None:
+        self._board = board
+        self._layers = layers
+
+        self._board_display = BoardDisplay(
+            board=self._board,
+            cell_len=self.CELL_LENGTH,
+            layers=self._layers,
+        )
+        self._alert = AlertBox(
+            width=self.width,
+            height=self.height,
+            text="",
+            layers=self._layers,
+        )
+
+    @property
+    def width(self) -> int:
+        return self._board.rows * self.CELL_LENGTH
+
+    @property
+    def height(self) -> int:
+        return self._board.cols * self.CELL_LENGTH
+
+    def to_board_coords(self, x: float, y: float) -> tuple[int, int]:
+        """Convert window coordinates into board coordinates."""
+        if self._is_out_of_bounds(x=x, y=y):
+            raise OutOfBounds("Outside board area")
+
+        return int(x // self.CELL_LENGTH), int(y // self.CELL_LENGTH)
+
+    def _is_out_of_bounds(self, x: float, y: float) -> bool:
+        """Check if coordinates are outside the window bounds.
+
+        This usually happens when clicking inside the window and releasing
+        outside.
+        """
+        return (x < 0 or x >= self.width) or (y < 0 or y >= self.height)
+
+    def update(self) -> None:
+        if self._board.has_won:
+            self._alert.text = "GG!"
+            self._layers["alert"].show()
+
+        if self._board.game_over:
+            self._alert.text = "Game Over"
+            self._layers["alert"].show()
+
+        self._board_display.update()
+
+
 class BoardDisplay:
-    def __init__(self, board: Board, cell_len: int, canvas: Canvas):
+    def __init__(self, board: Board, cell_len: int, layers: LayerMap) -> None:
         self._board = board
         self._cell_len = cell_len
-        self._canvas = canvas
+        self.layers = layers
 
         self._sprites: list[list[Sprite]] = self._create_sprites()
 
@@ -54,8 +115,8 @@ class BoardDisplay:
                         img=image,
                         x=x,
                         y=y,
-                        batch=self._canvas.batch,
-                        group=self._canvas["main"],
+                        batch=self.layers.batch,
+                        group=self.layers["main"],
                     )
                 )
 
@@ -71,13 +132,13 @@ class BoardDisplay:
                 self._sprites[r][c].image = self._images[cell.repr]
 
 
-class AlertDisplay:
+class AlertBox:
     FONT_SIZE = 24
     HEIGHT = 50
     WIDTH = 200
 
-    def __init__(self, width: int, height: int, text: str, canvas: Canvas):
-        self._canvas = canvas
+    def __init__(self, width: int, height: int, text: str, layers: LayerMap):
+        self._layers = layers
 
         self.rect = BorderedRectangle(
             x=(width // 2) - (self.WIDTH // 2),
@@ -86,8 +147,8 @@ class AlertDisplay:
             height=self.HEIGHT,
             color=(0, 0, 0, 255),
             border_color=(255, 0, 0, 255),
-            batch=self._canvas.batch,
-            group=self._canvas["alert"],
+            batch=self._layers.batch,
+            group=self._layers["alert"],
         )
 
         self.label = Label(
@@ -99,8 +160,8 @@ class AlertDisplay:
             anchor_y="center",
             color=(255, 0, 0, 255),
             weight="bold",
-            batch=self._canvas.batch,
-            group=self._canvas["alert"],
+            batch=self._layers.batch,
+            group=self._layers["alert"],
         )
 
     @property
