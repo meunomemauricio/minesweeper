@@ -14,10 +14,8 @@ class FPSDisplay(PygletFPSDisplay):
     FONT_SIZE = 16
     FONT_COLOR = 255, 0, 0, 200
 
-    def __init__(self, window: Window, is_active: bool = True):
+    def __init__(self, window: Window):
         super().__init__(window=window)
-        self._is_active = is_active
-
         self.label = Label(
             font_size=self.FONT_SIZE,
             x=window.width - self.FONT_SIZE * 4,
@@ -26,25 +24,16 @@ class FPSDisplay(PygletFPSDisplay):
             weight="bold",
         )
 
-    def update(self) -> None:
-        if self._is_active:
-            super().update()
-
-    def draw(self) -> None:
-        if self._is_active:
-            super().draw()
-
 
 class MinesweeperWindow(Window):
     CAPTION = f"Minesweeper - v{version('minesweeper')}"
 
     def __init__(self, board: Board, show_fps: bool) -> None:
         super().__init__(caption=self.CAPTION)
-
         self._board = board
         self.layers = LayerMap()
         self.coord = Coordinator(board=board, layers=self.layers)
-        self.fps_display = FPSDisplay(window=self, is_active=show_fps)
+        self.fps_display = FPSDisplay(window=self) if show_fps else None
 
         # Resize to fit the whole composition
         self.width, self.height = self.coord.width, self.coord.height
@@ -52,7 +41,8 @@ class MinesweeperWindow(Window):
     def on_draw(self) -> None:
         """Handle graphics drawing."""
         self.layers.draw()
-        self.fps_display.draw()
+        if self.fps_display is not None:
+            self.fps_display.draw()
 
     def on_mouse_release(self, x: float, y: float, button: int, modifiers: int) -> None:
         """Handle Mouse Release events."""
