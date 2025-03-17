@@ -2,7 +2,12 @@ from pyglet.window import mouse
 
 from minesweeper.board import Board
 from minesweeper.graphics import LayerMap
-from minesweeper.rendering import AlertBox, BoardDisplay, OutOfBounds
+from minesweeper.rendering import (
+    AlertBox,
+    BoardDisplay,
+    Dashboard,
+    OutOfBounds,
+)
 
 
 class Coordinator:
@@ -15,6 +20,12 @@ class Coordinator:
         self._board_display = BoardDisplay(
             board=self._board,
             layers=self._layers,
+        )
+        self._dashboard = Dashboard(
+            board=self._board,
+            layers=self._layers,
+            width=self._board_display.width,
+            y_offset=self._board_display.height,
         )
         self._alert = AlertBox(
             width=self.width,
@@ -29,7 +40,7 @@ class Coordinator:
 
     @property
     def height(self) -> int:
-        return self._board_display.height
+        return self._board_display.height + self._dashboard.HEIGHT
 
     def click(self, x: float, y: float, button: int) -> None:
         if self._board.game_over:

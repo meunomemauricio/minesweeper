@@ -22,19 +22,53 @@ class OutOfBounds(Exception):
 
 
 class Dashboard:
-    DASHBOARD_HEIGHT = 200
+    """Display timer, score, etc..."""
 
-    def __init__(self, board: Board, layers: LayerMap) -> None:
+    HEIGHT = 100  # px
+
+    BG_COLOR = (0xB4, 0xB4, 0xB4)
+    TEXT_COLOR = (0xFF, 0x00, 0x00)
+
+    FONT_SIZE = 32
+    LABEL_X = 10
+
+    def __init__(
+        self, board: Board, layers: LayerMap, width: int, y_offset: int
+    ) -> None:
+        self._board = board
         self._layers = layers
-        self.rect = Rectangle(
+        self._y_offset = y_offset
+
+        self._bg = Rectangle(
             x=0,
-            y=0,
-            width=100,
-            height=100,
+            y=y_offset,
+            width=width,
+            height=self.HEIGHT,
+            color=self.BG_COLOR,
+            batch=self._layers.batch,
+            group=self._layers["dash"],
         )
+
+        self._timer_label = Label(
+            font_size=self.FONT_SIZE,
+            text="000",
+            x=self.LABEL_X,
+            y=y_offset + (self.HEIGHT // 2) + 2,
+            anchor_x="left",
+            anchor_y="center",
+            color=self.TEXT_COLOR,
+            weight="bold",
+            batch=layers.batch,
+            group=layers["dash"],
+        )
+
+    def update(self) -> None:
+        pass
 
 
 class BoardDisplay:
+    """Board rendering."""
+
     CELL_LENGTH = 64  # Assume cells are square
 
     def __init__(self, board: Board, layers: LayerMap) -> None:
