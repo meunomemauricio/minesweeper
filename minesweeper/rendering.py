@@ -3,7 +3,7 @@ from importlib import resources
 
 from pyglet import resource
 from pyglet.image import AbstractImage
-from pyglet.shapes import BorderedRectangle
+from pyglet.shapes import BorderedRectangle, Rectangle
 from pyglet.sprite import Sprite
 from pyglet.text import Label
 
@@ -21,27 +21,27 @@ class OutOfBounds(Exception):
     """Received event coordinates outside of the board area."""
 
 
-class Composition:
-    CELL_LENGTH = 64  # Assume cells are square
+class Dashboard:
+    DASHBOARD_HEIGHT = 200
 
-    _alert: "AlertBox"
-    _board_display: "BoardDisplay"
+    def __init__(self, board: Board, layers: LayerMap) -> None:
+        self._layers = layers
+        self.rect = Rectangle(
+            x=0,
+            y=0,
+            width=100,
+            height=100,
+        )
+
+
+class BoardDisplay:
+    CELL_LENGTH = 64  # Assume cells are square
 
     def __init__(self, board: Board, layers: LayerMap) -> None:
         self._board = board
         self._layers = layers
 
-        self._board_display = BoardDisplay(
-            board=self._board,
-            cell_len=self.CELL_LENGTH,
-            layers=self._layers,
-        )
-        self._alert = AlertBox(
-            width=self.width,
-            height=self.height,
-            text="",
-            layers=self._layers,
-        )
+        self._sprites: list[list[Sprite]] = self._create_sprites()
 
     @property
     def width(self) -> int:
@@ -53,38 +53,19 @@ class Composition:
 
     def to_board_coords(self, x: float, y: float) -> tuple[int, int]:
         """Convert window coordinates into board coordinates."""
-        if self._is_out_of_bounds(x=x, y=y):
-            raise OutOfBounds("Outside board area")
-
+        self._check_bounds(x=x, y=y)
         return int(x // self.CELL_LENGTH), int(y // self.CELL_LENGTH)
 
-    def _is_out_of_bounds(self, x: float, y: float) -> bool:
-        """Check if coordinates are outside the window bounds.
+    def _check_bounds(self, x: float, y: float) -> None:
+        """Check if coordinates are outside the Board boundary.
 
         This usually happens when clicking inside the window and releasing
         outside.
         """
-        return (x < 0 or x >= self.width) or (y < 0 or y >= self.height)
-
-    def update(self) -> None:
-        if self._board.has_won:
-            self._alert.text = "GG!"
-            self._layers["alert"].show()
-
-        if self._board.game_over:
-            self._alert.text = "Game Over"
-            self._layers["alert"].show()
-
-        self._board_display.update()
-
-
-class BoardDisplay:
-    def __init__(self, board: Board, cell_len: int, layers: LayerMap) -> None:
-        self._board = board
-        self._cell_len = cell_len
-        self.layers = layers
-
-        self._sprites: list[list[Sprite]] = self._create_sprites()
+        x_out = x < 0 or x >= self.width
+        y_out = y < 0 or y >= self.height
+        if x_out or y_out:
+            raise OutOfBounds("Outside board area")
 
     @cached_property
     def _images(self) -> dict[StrCell, AbstractImage]:
@@ -108,15 +89,15 @@ class BoardDisplay:
         for r in range(0, self._board.rows):
             cols = []
             for c in range(0, self._board.cols):
-                x, y = r * self._cell_len, c * self._cell_len
+                x, y = r * self.CELL_LENGTH, c * self.CELL_LENGTH
                 image = self._images[self._board[r, c].repr]
                 cols.append(
                     Sprite(
                         img=image,
                         x=x,
                         y=y,
-                        batch=self.layers.batch,
-                        group=self.layers["main"],
+                        batch=self._layers.batch,
+                        group=self._layers["main"],
                     )
                 )
 
@@ -138,8 +119,6 @@ class AlertBox:
     WIDTH = 200
 
     def __init__(self, width: int, height: int, text: str, layers: LayerMap):
-        self._layers = layers
-
         self.rect = BorderedRectangle(
             x=(width // 2) - (self.WIDTH // 2),
             y=(height // 2) - (self.HEIGHT // 2),
@@ -147,8 +126,8 @@ class AlertBox:
             height=self.HEIGHT,
             color=(0, 0, 0, 255),
             border_color=(255, 0, 0, 255),
-            batch=self._layers.batch,
-            group=self._layers["alert"],
+            batch=layers.batch,
+            group=layers["alert"],
         )
 
         self.label = Label(
@@ -160,8 +139,8 @@ class AlertBox:
             anchor_y="center",
             color=(255, 0, 0, 255),
             weight="bold",
-            batch=self._layers.batch,
-            group=self._layers["alert"],
+            batch=layers.batch,
+            group=layers["alert"],
         )
 
     @property

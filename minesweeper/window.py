@@ -1,11 +1,11 @@
 from importlib.metadata import version
 
 from pyglet.text import Label
-from pyglet.window import FPSDisplay as PygletFPSDisplay, Window, key, mouse
+from pyglet.window import FPSDisplay as PygletFPSDisplay, Window, key
 
 from minesweeper.board import Board
+from minesweeper.coordinator import Coordinator
 from minesweeper.graphics import LayerMap
-from minesweeper.rendering import Composition, OutOfBounds
 
 
 class FPSDisplay(PygletFPSDisplay):
@@ -43,11 +43,11 @@ class MinesweeperWindow(Window):
 
         self._board = board
         self.layers = LayerMap()
-        self.comp = Composition(board=board, layers=self.layers)
+        self.coord = Coordinator(board=board, layers=self.layers)
         self.fps_display = FPSDisplay(window=self, is_active=show_fps)
 
-        # Resize to fit the composition
-        self.width, self.height = self.comp.width, self.comp.height
+        # Resize to fit the whole composition
+        self.width, self.height = self.coord.width, self.coord.height
 
     def on_draw(self) -> None:
         """Handle graphics drawing."""
@@ -56,21 +56,7 @@ class MinesweeperWindow(Window):
 
     def on_mouse_release(self, x: float, y: float, button: int, modifiers: int) -> None:
         """Handle Mouse Release events."""
-        if self._board.game_over:
-            return
-
-        try:
-            row, col = self.comp.to_board_coords(x=x, y=y)
-        except OutOfBounds:
-            return
-
-        match button:
-            case mouse.LEFT:
-                self._board.step(row=row, col=col)
-            case mouse.RIGHT:
-                self._board.flag(row=row, col=col)
-
-        self.comp.update()
+        self.coord.click(x=x, y=y, button=button)
 
     def on_key_release(self, symbol: int, modifiers: int) -> None:
         """Handle Keyboard Release events."""
@@ -78,7 +64,4 @@ class MinesweeperWindow(Window):
             case key.ESCAPE | key.Q:
                 self.close()
             case key.R:
-                self._board.reset()
-                self.layers["alert"].hide()
-
-        self.comp.update()
+                self.coord.reset()

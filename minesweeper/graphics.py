@@ -2,7 +2,7 @@ from typing import Literal
 
 from pyglet.graphics import Batch, Group
 
-Layers = Literal["bg", "main", "alert"]
+Layers = Literal["dash", "main", "alert"]
 
 
 class ToggleGroup(Group):
@@ -31,7 +31,7 @@ class LayerMap:
         self.batch = Batch()
 
         self.groups: dict[Layers, ToggleGroup] = {
-            "bg": ToggleGroup(order=0),
+            "dash": ToggleGroup(order=0),
             "main": ToggleGroup(order=1),
             "alert": ToggleGroup(order=2, visible=False),
         }
