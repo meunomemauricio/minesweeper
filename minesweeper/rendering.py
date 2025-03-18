@@ -27,10 +27,10 @@ class Dashboard:
     HEIGHT = 100  # px
 
     BG_COLOR = (0xB4, 0xB4, 0xB4)
-    TEXT_COLOR = (0xFF, 0x00, 0x00)
+    TEXT_COLOR = (0x00, 0x00, 0x00)
 
-    FONT_SIZE = 32
-    LABEL_X = 10
+    FONT_SIZE = 24
+    TIMER_X = 10
 
     def __init__(
         self, board: Board, layers: LayerMap, width: int, y_offset: int
@@ -52,9 +52,21 @@ class Dashboard:
         self._timer_label = Label(
             font_size=self.FONT_SIZE,
             text="000",
-            x=self.LABEL_X,
-            y=y_offset + (self.HEIGHT // 2) + 2,
-            anchor_x="left",
+            x=width // 4,
+            y=y_offset + (self.HEIGHT // 2),
+            anchor_x="center",
+            anchor_y="center",
+            color=self.TEXT_COLOR,
+            weight="bold",
+            batch=layers.batch,
+            group=layers["dash"],
+        )
+        self._mines_label = Label(
+            font_size=self.FONT_SIZE,
+            text="00",
+            x=width * 3 // 4,
+            y=y_offset + (self.HEIGHT // 2),
+            anchor_x="center",
             anchor_y="center",
             color=self.TEXT_COLOR,
             weight="bold",
@@ -63,7 +75,7 @@ class Dashboard:
         )
 
     def update(self) -> None:
-        pass
+        self._timer_label.text = f"{self._board.elapsed:0.0f}"
 
 
 class BoardDisplay:

@@ -40,6 +40,7 @@ class MinesweeperWindow(Window):
 
     def on_draw(self) -> None:
         """Handle graphics drawing."""
+        self.coord.pre_draw()
         self.layers.draw()
         if self.fps_display is not None:
             self.fps_display.draw()

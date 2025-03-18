@@ -67,12 +67,12 @@ class Coordinator:
 
     def _update(self) -> None:
         """Update status after a mouse click or reset."""
-        if self._board.has_won:
-            self._alert.text = "GG!"
-            self._layers["alert"].show()
-
         if self._board.game_over:
-            self._alert.text = "Game Over"
+            self._alert.text = "GG" if self._board.has_won else "Game Over"
             self._layers["alert"].show()
 
         self._board_display.update()
+
+    def pre_draw(self) -> None:
+        """Updates to be executed before rendering."""
+        self._dashboard.update()

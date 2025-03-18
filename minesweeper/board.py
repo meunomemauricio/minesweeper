@@ -1,5 +1,6 @@
 import itertools
 import random
+import time
 
 from minesweeper.cells import Cell, CellMatrix
 
@@ -26,6 +27,9 @@ class Board:
         self.initialized = False
         self.game_over = False
 
+        self.start_time: float | None = None
+        self.stop_time: float | None = None
+
     def __getitem__(self, coords: tuple[int, int]) -> Cell:
         """Access the rows of pieces
 
@@ -34,6 +38,15 @@ class Board:
             board[r][c]
         """
         return self._cells[*coords]
+
+    @property
+    def elapsed(self) -> float:
+        """Elapsed time since game started until game over."""
+        if not self.start_time:
+            return 0.0
+
+        stop_time = self.stop_time if self.stop_time else time.time()
+        return stop_time - self.start_time
 
     @property
     def has_won(self) -> bool:
@@ -66,6 +79,7 @@ class Board:
                         self._cells[r_m + i, c_m + j].count += 1
 
         self.initialized = True
+        self.start_time = time.time()
 
     def _reveal_adjacent(self, cell: Cell) -> None:
         """Recursively reveal adjacent empty cells."""
@@ -94,6 +108,8 @@ class Board:
 
     def reset(self) -> None:
         """Reset the Board."""
+        self.start_time = None
+        self.stop_time = None
         self.initialized = False
         self.game_over = False
         self._cells = CellMatrix(rows=self.rows, cols=self.cols)
@@ -120,6 +136,7 @@ class Board:
             self._reveal_adjacent(cell=cell)
 
         if cell.is_mine:
+            self.stop_time = time.time()
             self.game_over = True
 
     def flag(self, row: int, col: int) -> None:
@@ -133,3 +150,7 @@ class Board:
         cell = self._cells[row, col]
         cell.is_flag = not cell.is_flag
         cell.is_hidden = not cell.is_hidden
+
+        if self.has_won:
+            self.stop_time = time.time()
+            self.game_over = True
