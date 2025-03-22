@@ -1,78 +1,43 @@
-from importlib.metadata import version
+from typing import Literal
 
-from pyglet import window
+from pyglet.graphics import Batch, Group
 
-from minesweeper.board import Board
-from minesweeper.rendering import BoardDisplay, CentralTextDisplay, FPSDisplay
-
-CELL_LENGTH = 64  # Assume cells are square
+Layers = Literal["dash", "main", "alert"]
 
 
-class MinesweeperWindow(window.Window):
-    CAPTION: str = f"Minesweeper - v{version('minesweeper')}"
+class ToggleGroup(Group):
+    """Group Extension class, accepts a visible parameter."""
 
-    def __init__(self, board: Board, show_fps: bool) -> None:
-        self.board = board
+    def __init__(
+        self,
+        order: int,
+        parent: Group | None = None,
+        visible: bool = True,
+    ) -> None:
+        super().__init__(order=order, parent=parent)
+        self.visible = visible
 
-        super().__init__(
-            width=self.board.rows * CELL_LENGTH,
-            height=self.board.cols * CELL_LENGTH,
-            caption=self.CAPTION,
-        )
+    def hide(self) -> None:
+        self.visible = False
 
-        self.board_display = BoardDisplay(board=board, cell_len=CELL_LENGTH)
-        self.game_over_text = CentralTextDisplay(
-            width=self.width,
-            height=self.height,
-            text="GAME OVER",
-        )
-        self.win_text = CentralTextDisplay(
-            width=self.width,
-            height=self.height,
-            text="GG!",
-        )
-        self.fps_display = FPSDisplay(window=self, is_active=show_fps)
+    def show(self) -> None:
+        self.visible = True
 
-    def _is_out_of_bounds(self, x: float, y: float) -> bool:
-        """Check if coordinates are outside the window bounds."""
-        return (x < 0 or x >= self.width) or (y < 0 or y >= self.height)
 
-    def _to_board_coords(self, x: float, y: float) -> tuple[int, int]:
-        """Convert the window coordinates into board coordinates."""
-        return int(x // CELL_LENGTH), int(y // CELL_LENGTH)
+class LayerMap:
+    """Combines groups into a single batch for layered rending."""
 
-    def on_draw(self) -> None:
-        """Handle graphics drawing."""
-        self.board_display.draw()
+    def __init__(self) -> None:
+        self.batch = Batch()
 
-        if self.board.has_won:
-            self.win_text.draw()
+        self.groups: dict[Layers, ToggleGroup] = {
+            "dash": ToggleGroup(order=0),
+            "main": ToggleGroup(order=1),
+            "alert": ToggleGroup(order=2, visible=False),
+        }
 
-        if self.board.game_over:
-            self.game_over_text.draw()
+    def __getitem__(self, name: Layers) -> ToggleGroup:
+        return self.groups[name]
 
-        self.fps_display.draw()
-
-    def on_mouse_release(self, x: float, y: float, button: int, modifiers: int) -> None:
-        """Handle Mouse Release events."""
-        if self._is_out_of_bounds(x=x, y=y) or self.board.game_over:
-            return
-
-        row, col = self._to_board_coords(x=x, y=y)
-        match button:
-            case window.mouse.LEFT:
-                self.board.step(row=row, col=col)
-            case window.mouse.RIGHT:
-                self.board.flag(row=row, col=col)
-
-        self.board_display.update()
-
-    def on_key_release(self, symbol: int, modifiers: int) -> None:
-        """Handle Keyboard Release events."""
-        match symbol:
-            case window.key.ESCAPE | window.key.Q:
-                self.close()
-            case window.key.R:
-                self.board.reset()
-
-        self.board_display.update()
+    def draw(self) -> None:
+        self.batch.draw()
