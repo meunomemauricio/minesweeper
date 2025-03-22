@@ -99,9 +99,6 @@ class Board:
             cell.is_hidden = False
             revealed.add(cell)
 
-            if not cell.is_empty:
-                continue
-
             for i, j in itertools.product(range(-1, 2), range(-1, 2)):
                 r_adj, c_adj = cell.row + i, cell.col + j
                 try:
@@ -109,7 +106,24 @@ class Board:
                 except IndexError:
                     continue
                 else:
-                    stack.append(adj)
+                    if adj.is_empty:
+                        stack.append(adj)
+                    elif self._count_adjacent_flags(cell=cell) == cell.count:
+                        stack.append(adj)
+
+    def _count_adjacent_flags(self, cell: Cell) -> int:
+        """Return number of adjacent cells that are flags."""
+        total = 0
+        for i, j in itertools.product(range(-1, 2), range(-1, 2)):
+            r_adj, c_adj = cell.row + i, cell.col + j
+            try:
+                adj = self._cells[r_adj, c_adj]
+            except IndexError:
+                continue
+            else:
+                total += 1 if adj.is_flag else 0
+
+        return total
 
     def reset(self) -> None:
         """Reset the Board."""
@@ -137,8 +151,7 @@ class Board:
 
         cell.is_hidden = False
 
-        if cell.is_empty:
-            self._reveal_adjacent(cell=cell)
+        self._reveal_adjacent(cell=cell)
 
         if cell.is_mine:
             self.stop_time = time.time()
