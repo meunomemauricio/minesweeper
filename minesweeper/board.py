@@ -166,6 +166,9 @@ class Board:
             raise GameOverError("Can't toggle flags after game over.")
 
         cell = self._cells[row, col]
+        if not cell.is_hidden:
+            return
+
         cell.is_flag = not cell.is_flag
         cell.is_hidden = not cell.is_hidden
 
