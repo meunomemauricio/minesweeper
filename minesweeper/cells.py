@@ -81,6 +81,10 @@ class CellMatrix:
         return self._matrix[coord[0]][coord[1]]
 
     @property
+    def flag_count(self) -> int:
+        return sum(sum(1 for cell in row if cell.is_flag) for row in self._matrix)
+
+    @property
     def hidden_count(self) -> int:
         return sum(sum(1 for cell in row if cell.is_hidden) for row in self._matrix)
 

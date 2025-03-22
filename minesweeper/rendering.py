@@ -75,7 +75,8 @@ class Dashboard:
         )
 
     def update(self) -> None:
-        self._timer_label.text = f"{self._board.elapsed:0.0f}"
+        self._timer_label.text = f"{self._board.elapsed:0.01f}"
+        self._mines_label.text = f"{self._board.mines_left:02d}"
 
 
 class BoardDisplay:

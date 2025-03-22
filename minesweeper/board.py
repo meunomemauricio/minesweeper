@@ -49,6 +49,11 @@ class Board:
         return stop_time - self.start_time
 
     @property
+    def mines_left(self) -> float:
+        """Score based on the elapsed time."""
+        return self.mines - self._cells.flag_count
+
+    @property
     def has_won(self) -> bool:
         """Whether the board reached a winning state."""
         return self._cells.correct_count == self.mines
