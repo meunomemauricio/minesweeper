@@ -99,6 +99,11 @@ class Board:
             cell.is_hidden = False
             revealed.add(cell)
 
+            if cell.is_mine and not cell.is_flag:
+                self.stop_time = time.time()
+                self.game_over = True
+                return
+
             for i, j in itertools.product(range(-1, 2), range(-1, 2)):
                 r_adj, c_adj = cell.row + i, cell.col + j
                 try:
@@ -166,7 +171,7 @@ class Board:
             raise GameOverError("Can't toggle flags after game over.")
 
         cell = self._cells[row, col]
-        if not cell.is_hidden:
+        if not cell.is_flag and not cell.is_hidden:
             return
 
         cell.is_flag = not cell.is_flag

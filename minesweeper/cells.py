@@ -64,7 +64,11 @@ class Cell:
 
 
 class CellMatrix:
-    """Strict List - Doesn't wrap around negative indices."""
+    """Multiple cells arranged in a matrix.
+
+    Basically a list of lists but they work strictly, i.e. dont' wrap around
+    negative indices.
+    """
 
     def __init__(self, rows: int, cols: int) -> None:
         self.rows = rows
